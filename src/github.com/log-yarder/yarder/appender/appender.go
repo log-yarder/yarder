@@ -3,7 +3,6 @@ package appender
 import (
 	"fmt"
 	"github.com/log-yarder/yarder/storage"
-	"log"
 )
 
 func New(storage storage.Storage, maxEntriesPerChunk int) *appender {
@@ -23,7 +22,6 @@ func (a *appender) HandleRequest(entry string) error {
 			return fmt.Errorf("Unable to create chunk: %v", err)
 		}
 		a.openChunk = chunk
-		log.Println("Appender opened new chunk")
 	}
 
 	// Write the entry.

@@ -73,7 +73,7 @@ func (c *diskLogChunk) Close() error {
 	if err != nil {
 		return fmt.Errorf("Unable to write raw chunk: %v", err)
 	}
-	log.Printf("Wrote raw file: %s", c.chunkFile)
+	log.Printf("Wrote chunk file: %s", c.chunkFile)
 
 	return nil
 }
@@ -101,7 +101,6 @@ type diskStorage struct {
 func (s *diskStorage) CreateChunk() (LogChunk, error) {
 	chunkId := fmt.Sprintf("chunk-%d", s.chunkCounter)
 	s.chunkCounter++
-	log.Printf("Allocating [%s]\n", chunkId)
 
 	return &diskLogChunk{
 		id:        chunkId,

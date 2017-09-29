@@ -13,7 +13,7 @@ const (
 )
 
 func main() {
-	tmpDir, err := ioutil.TempDir(path.Join("/", "tmp"), "almanac-dev")
+	tmpDir, err := ioutil.TempDir(path.Join("/", "tmp"), "yarder-dev")
 	if err != nil {
 		panic(fmt.Sprintf("Unable to create temp dir, %v", err))
 	}
