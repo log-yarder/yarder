@@ -6,21 +6,16 @@ import (
 	"log"
 )
 
-const (
-	maxEntriesPerChunk = 1000
-	maxChunkAgeMs      = 1000 * 60 * 30
-)
-
-func New(storage storage.Storage) *appender {
+func New(storage storage.Storage, maxEntriesPerChunk int) *appender {
 	return &appender{
-		storage: storage,
+		storage:            storage,
+		maxEntriesPerChunk: maxEntriesPerChunk,
+		openChunk:          nil,
 	}
 }
 
 // HandleRequest processes a request to append a single entry to the logs.
 func (a *appender) HandleRequest(entry string) error {
-	log.Println("Appender handling request")
-
 	// Make sure we have a chunk to write to.
 	if a.openChunk == nil {
 		chunk, err := a.storage.CreateChunk()
@@ -31,14 +26,23 @@ func (a *appender) HandleRequest(entry string) error {
 		log.Println("Appender opened new chunk")
 	}
 
+	// Write the entry.
 	err := a.openChunk.Append(entry)
 	if err != nil {
 		return fmt.Errorf("Unable to append entry: %v", err)
 	}
+
+	// Close up the current chunk if necessary.
+	if a.openChunk.Size() > a.maxEntriesPerChunk {
+		a.openChunk.Close()
+		a.openChunk = nil
+	}
+
 	return nil
 }
 
 type appender struct {
-	storage   storage.Storage
-	openChunk storage.LogChunk
+	storage            storage.Storage
+	maxEntriesPerChunk int
+	openChunk          storage.LogChunk
 }

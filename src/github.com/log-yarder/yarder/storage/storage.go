@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"path"
-	"path/filepath"
 )
 
 const (
@@ -19,6 +17,9 @@ const (
 type LogChunk interface {
 	// Append add a single entry to an open chunk.
 	Append(entry string) error
+
+	// Size returns the current number of entries in the chunk.
+	Size() int
 
 	// Close declares an open chunk as done and performs necessary cleanup tasks.
 	Close() error
@@ -41,35 +42,23 @@ func NewDiskStorage(rootPath string) Storage {
 
 // diskLogChunk is an implementation of LogChunk backed by a directory on disk.
 type diskLogChunk struct {
-	id             string
-	chunkDir       string
-	chunkFileRaw   string
-	chunkFileIndex string
-	entryCounter   int
-	closed         bool
+	id        string
+	closed    bool
+	chunkFile string
+	entries   []string
 }
 
 func (c *diskLogChunk) Append(entry string) error {
-	entryId := fmt.Sprintf("entry-%d", c.entryCounter)
-	c.entryCounter++
-
-	entryPath := path.Join(c.chunkDir, entryId)
-	err := ioutil.WriteFile(entryPath, []byte(entry), filePerms)
-	if err != nil {
-		return fmt.Errorf("Unable to write file: %v", err)
-	}
-
-	log.Printf("[%s] wrote [%s] to file: %s\n", c.id, entryId, entryPath)
+	c.entries = append(c.entries, entry)
 	return nil
 }
 
-// index is the format used for the index file of a chunk.
-type index struct {
-	Count int
+func (c *diskLogChunk) Size() int {
+	return len(c.entries)
 }
 
 // raw is the format used for the raw file of a chunk.
-type raw struct {
+type persistedChunk struct {
 	Entries []string
 }
 
@@ -79,47 +68,12 @@ func (c *diskLogChunk) Close() error {
 	}
 	c.closed = true
 
-	// Go through all the entries and construct the contents of the two files.
-	rawEntries := []string{}
-	indexCount := 0
-	err := filepath.Walk(c.chunkDir, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			// Skip the directory itself.
-			return nil
-		}
-
-		bytes, err := ioutil.ReadFile(path)
-		if err != nil {
-			return fmt.Errorf("Unable to read file: %s", path)
-		}
-		rawEntries = append(rawEntries, string(bytes))
-		indexCount++
-		return nil
-	})
-	if err != nil {
-		return fmt.Errorf("Unable to walk files in chunk: %v", err)
-	}
-
 	// Write the raw file for this chunk before anything else.
-	err = writeJson(c.chunkFileRaw, &raw{Entries: rawEntries})
+	err := writeJson(c.chunkFile, &persistedChunk{Entries: c.entries})
 	if err != nil {
 		return fmt.Errorf("Unable to write raw chunk: %v", err)
 	}
-	log.Printf("Wrote raw file: %s", c.chunkFileRaw)
-
-	// Write the index file corresponding to this chunk.
-	err = writeJson(c.chunkFileIndex, &index{Count: indexCount})
-	if err != nil {
-		return fmt.Errorf("Unable to write chunk index: %v", err)
-	}
-	log.Printf("Wrote index file: %s", c.chunkFileIndex)
-
-	// Delete the directory containing the individual files.
-	err = os.RemoveAll(c.chunkDir)
-	if err != nil {
-		return fmt.Errorf("Unable to delete chunk directory %s: %v", c.chunkDir, err)
-	}
-	log.Printf("Removed chunk directory %s", c.chunkDir)
+	log.Printf("Wrote raw file: %s", c.chunkFile)
 
 	return nil
 }
@@ -149,18 +103,10 @@ func (s *diskStorage) CreateChunk() (LogChunk, error) {
 	s.chunkCounter++
 	log.Printf("Allocating [%s]\n", chunkId)
 
-	chunkPath := path.Join(s.path, chunkId)
-	err := os.Mkdir(chunkPath, dirPerms)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to create file: %v", err)
-	}
-
 	return &diskLogChunk{
-		id:             chunkId,
-		closed:         false,
-		entryCounter:   0,
-		chunkDir:       chunkPath,
-		chunkFileRaw:   path.Join(s.path, fmt.Sprintf("%s-raw", chunkId)),
-		chunkFileIndex: path.Join(s.path, fmt.Sprintf("%s-idx", chunkId)),
+		id:        chunkId,
+		closed:    false,
+		chunkFile: path.Join(s.path, chunkId),
+		entries:   []string{},
 	}, nil
 }

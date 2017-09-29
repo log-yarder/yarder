@@ -8,6 +8,10 @@ import (
 	"path"
 )
 
+const (
+	maxEntriesPerChunk = 10
+)
+
 func main() {
 	tmpDir, err := ioutil.TempDir(path.Join("/", "tmp"), "almanac-dev")
 	if err != nil {
@@ -15,27 +19,9 @@ func main() {
 	}
 
 	diskStorage := storage.NewDiskStorage(tmpDir)
-	appender := appender.New(diskStorage)
+	appender := appender.New(diskStorage, maxEntriesPerChunk)
 
-	chunk, err := diskStorage.CreateChunk()
-	if err != nil {
-		panic(fmt.Sprintf("Unable to create chunk, %v", err))
+	for i := 0; i < 40; i++ {
+		appender.HandleRequest(fmt.Sprintf("entry-%d", i))
 	}
-
-	err = chunk.Append("foo")
-	if err != nil {
-		panic(fmt.Sprintf("Unable to write first log entry, %v", err))
-	}
-
-	err = chunk.Append("bar")
-	if err != nil {
-		panic(fmt.Sprintf("Unable to write second log entry, %v", err))
-	}
-
-	err = chunk.Close()
-	if err != nil {
-		panic(fmt.Sprintf("Unable to close log chunk, %v", err))
-	}
-
-	appender.HandleRequest("fooentry")
 }
