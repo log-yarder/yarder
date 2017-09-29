@@ -34,7 +34,11 @@ func (a *appender) HandleRequest(entry string) error {
 
 	// Close up the current chunk if necessary.
 	if a.openChunk.Size() > a.maxEntriesPerChunk {
-		a.openChunk.Close()
+		err := a.openChunk.Close()
+		if err != nil {
+			return fmt.Errorf("Unable to close chunk: %v", err)
+		}
+
 		a.openChunk = nil
 	}
 
