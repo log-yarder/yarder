@@ -6,7 +6,6 @@ import (
 	"github.com/log-yarder/yarder/storage"
 	"io/ioutil"
 	"log"
-	"os"
 )
 
 const (
@@ -14,7 +13,7 @@ const (
 )
 
 func main() {
-	tmpDir, err := ioutil.TempDir(os.TempDir(), "yarder-dev")
+	tmpDir, err := ioutil.TempDir("", "yarder-dev")
 	if err != nil {
 		log.Panicf(fmt.Sprintf("Unable to create temp dir, %v", err))
 	}
