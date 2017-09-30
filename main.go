@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+
 	"github.com/log-yarder/yarder/appender"
 	"github.com/log-yarder/yarder/discovery"
 	"github.com/log-yarder/yarder/ingester"
 	"github.com/log-yarder/yarder/storage"
-	"io/ioutil"
-	"log"
 )
 
 const (

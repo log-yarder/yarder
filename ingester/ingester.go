@@ -2,6 +2,7 @@ package ingester
 
 import (
 	"fmt"
+
 	"github.com/log-yarder/yarder/discovery"
 )
 
