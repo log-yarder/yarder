@@ -83,7 +83,7 @@ func writeJson(path string, content interface{}) error {
 
 	err = ioutil.WriteFile(path, bytes, filePerms)
 	if err != nil {
-		return fmt.Errorf("Unable to write file to file %s: %v", path, err)
+		return fmt.Errorf("Unable to write to file %s: %v", path, err)
 	}
 
 	return nil
