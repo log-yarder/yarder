@@ -31,13 +31,10 @@ type Storage interface {
 	CreateChunk() (LogChunk, error)
 }
 
-// NewDiskStorage returns an instance of Strage backed by files on disk.
-func NewDiskStorage(rootPath string) Storage {
-	log.Printf("Creating new storage with root: %s\n", rootPath)
-	return &diskStorage{
-		chunkCounter: 0,
-		path:         rootPath,
-	}
+// DiskStorage is an implementation of Storage backed by a directory on disk.
+type DiskStorage struct {
+	Path         string
+	chunkCounter int
 }
 
 // persistedChunk is the format used to serialize a chunk to bytes.
@@ -92,20 +89,14 @@ func writeJson(path string, content interface{}) error {
 	return nil
 }
 
-// diskStorage is an implementation of Storage backed by a directory on disk.
-type diskStorage struct {
-	chunkCounter int
-	path         string
-}
-
-func (s *diskStorage) CreateChunk() (LogChunk, error) {
+func (s *DiskStorage) CreateChunk() (LogChunk, error) {
 	chunkId := fmt.Sprintf("chunk-%d", s.chunkCounter)
 	s.chunkCounter++
 
 	return &diskLogChunk{
 		id:        chunkId,
 		closed:    false,
-		chunkFile: path.Join(s.path, chunkId),
+		chunkFile: path.Join(s.Path, chunkId),
 		entries:   []string{},
 	}, nil
 }

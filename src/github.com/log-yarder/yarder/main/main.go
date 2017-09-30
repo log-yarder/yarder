@@ -18,8 +18,11 @@ func main() {
 		panic(fmt.Sprintf("Unable to create temp dir, %v", err))
 	}
 
-	diskStorage := storage.NewDiskStorage(tmpDir)
-	appender := appender.New(diskStorage, maxEntriesPerChunk)
+	diskStorage := &storage.DiskStorage{Path: tmpDir}
+	appender := &appender.Appender{
+		Storage:            diskStorage,
+		MaxEntriesPerChunk: maxEntriesPerChunk,
+	}
 
 	for i := 0; i < 40; i++ {
 		appender.HandleRequest(fmt.Sprintf("entry-%d", i))
