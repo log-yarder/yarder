@@ -14,10 +14,10 @@ type Ingester struct {
 // HandleIngest ingests a single log entry.
 func (i *Ingester) HandleIngest(entry string) error {
 	// For now, just append to all appenders.
-	for _, appender := range i.Discovery.Appenders {
+	for i, appender := range i.Discovery.Appenders {
 		err := appender.HandleAppend(entry)
 		if err != nil {
-			return fmt.Errorf("Unable to handle append: %v", err)
+			return fmt.Errorf("unable call append on appender %d: %v", i, err)
 		}
 	}
 	return nil

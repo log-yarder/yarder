@@ -39,9 +39,10 @@ func main() {
 	ingester := &ingester.Ingester{Discovery: discovery}
 
 	for i := 0; i < 40; i++ {
-		err := ingester.HandleIngest(fmt.Sprintf("entry-%d", i))
+		name := fmt.Sprintf("entry-%d", i)
+		err := ingester.HandleIngest(name)
 		if err != nil {
-			log.Panicf(fmt.Sprintf("Failed to handle ingest, %v", err))
+			log.Panicf(fmt.Sprintf("failed to ingest entry [%s], %v", name, err))
 		}
 	}
 }

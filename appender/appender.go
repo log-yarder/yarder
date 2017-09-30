@@ -12,7 +12,7 @@ type Appender struct {
 	openChunk          storage.LogChunk
 }
 
-// HandleRequest processes a request to append a single entry to the logs.
+// HandleAppend processes a request to append a single entry to the logs.
 func (a *Appender) HandleAppend(entry string) error {
 	// Make sure we have a chunk to write to.
 	if a.openChunk == nil {
