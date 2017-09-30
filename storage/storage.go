@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	dirPerms  = 0777
-	filePerms = 777
+	dirPerms  = 0755
+	filePerms = 0644
 )
 
 // LogChunk represents a sequence of log entries.
