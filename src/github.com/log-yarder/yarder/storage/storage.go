@@ -40,6 +40,11 @@ func NewDiskStorage(rootPath string) Storage {
 	}
 }
 
+// persistedChunk is the format used to serialize a chunk to bytes.
+type persistedChunk struct {
+	Entries []string
+}
+
 // diskLogChunk is an implementation of LogChunk backed by a directory on disk.
 type diskLogChunk struct {
 	id        string
@@ -55,11 +60,6 @@ func (c *diskLogChunk) Append(entry string) error {
 
 func (c *diskLogChunk) Size() int {
 	return len(c.entries)
-}
-
-// raw is the format used for the raw file of a chunk.
-type persistedChunk struct {
-	Entries []string
 }
 
 func (c *diskLogChunk) Close() error {
