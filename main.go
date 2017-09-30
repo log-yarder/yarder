@@ -36,8 +36,8 @@ func main() {
 		},
 	}
 	discovery := &discovery.Discovery{Appenders: appenders}
-
 	ingester := &ingester.Ingester{Discovery: discovery}
+
 	for i := 0; i < 40; i++ {
 		err := ingester.HandleIngest(fmt.Sprintf("entry-%d", i))
 		if err != nil {

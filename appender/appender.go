@@ -5,6 +5,7 @@ import (
 	"github.com/log-yarder/yarder/storage"
 )
 
+// Appender handles requets to append log entries to storage-backed chunks.
 type Appender struct {
 	Storage            storage.Storage
 	MaxEntriesPerChunk int
