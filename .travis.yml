@@ -9,6 +9,6 @@ install:
   - go get -v golang.org/x/tools/cmd/goimports
 
 script:
-  - if goimports -d -e ./ | grep '.*' --color=never; then exit 1; fi
+  - test -z "$(for d in $(go list -f '{{.Dir}}' ./...); do goimports -d $d/*.go | tee /dev/stderr; done)"
   - go test -v ./...
   - go vet ./...
