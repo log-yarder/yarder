@@ -2,6 +2,7 @@ package appender
 
 import (
 	"fmt"
+
 	"github.com/log-yarder/yarder/storage"
 )
 

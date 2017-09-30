@@ -4,3 +4,11 @@ go:
   - 1.7.x
   - 1.8.x
   - 1.9.x
+
+install:
+  - go get -v golang.org/x/tools/cmd/goimports
+
+script:
+  - if goimports -d -e ./ | grep '.*' --color=never; then exit 1; fi
+  - go test -v ./...
+  - go vet ./...
