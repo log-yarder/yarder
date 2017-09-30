@@ -5,14 +5,15 @@ import (
 	"github.com/log-yarder/yarder/storage"
 )
 
+// Appender handles requets to append log entries to storage-backed chunks.
 type Appender struct {
 	Storage            storage.Storage
 	MaxEntriesPerChunk int
 	openChunk          storage.LogChunk
 }
 
-// HandleRequest processes a request to append a single entry to the logs.
-func (a *Appender) HandleRequest(entry string) error {
+// HandleAppend processes a request to append a single entry to the logs.
+func (a *Appender) HandleAppend(entry string) error {
 	// Make sure we have a chunk to write to.
 	if a.openChunk == nil {
 		chunk, err := a.Storage.CreateChunk()

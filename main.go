@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/log-yarder/yarder/appender"
+	"github.com/log-yarder/yarder/discovery"
+	"github.com/log-yarder/yarder/ingester"
 	"github.com/log-yarder/yarder/storage"
 	"io/ioutil"
 	"log"
@@ -19,12 +21,28 @@ func main() {
 	}
 
 	diskStorage := &storage.DiskStorage{Path: tmpDir}
-	appender := &appender.Appender{
-		Storage:            diskStorage,
-		MaxEntriesPerChunk: maxEntriesPerChunk,
+	appenders := []*appender.Appender{
+		&appender.Appender{
+			Storage:            diskStorage,
+			MaxEntriesPerChunk: maxEntriesPerChunk,
+		},
+		&appender.Appender{
+			Storage:            diskStorage,
+			MaxEntriesPerChunk: maxEntriesPerChunk,
+		},
+		&appender.Appender{
+			Storage:            diskStorage,
+			MaxEntriesPerChunk: maxEntriesPerChunk,
+		},
 	}
+	discovery := &discovery.Discovery{Appenders: appenders}
+	ingester := &ingester.Ingester{Discovery: discovery}
 
 	for i := 0; i < 40; i++ {
-		appender.HandleRequest(fmt.Sprintf("entry-%d", i))
+		name := fmt.Sprintf("entry-%d", i)
+		err := ingester.HandleIngest(name)
+		if err != nil {
+			log.Panicf(fmt.Sprintf("failed to ingest entry [%s], %v", name, err))
+		}
 	}
 }
