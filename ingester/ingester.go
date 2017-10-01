@@ -3,7 +3,6 @@ package ingester
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/log-yarder/yarder/discovery"
 	"github.com/log-yarder/yarder/storage"
@@ -49,13 +48,13 @@ func createEntry(rawEntry []byte) (*storage.LogEntry, error) {
 		return nil, fmt.Errorf("could not find key %s in map", timestampKey)
 	}
 
-	timestamp, ok := value.(float64)
+	timestampMs, ok := value.(float64)
 	if !ok {
 		return nil, fmt.Errorf("unable to interpret timestamp as int64")
 	}
 
 	return &storage.LogEntry{
-		Timestamp: time.Unix(int64(timestamp), 0),
-		Raw:       rawEntry,
+		TimestampMs: int64(timestampMs),
+		Raw:         rawEntry,
 	}, nil
 }

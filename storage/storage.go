@@ -7,7 +7,6 @@ import (
 	"log"
 	"path"
 	"sort"
-	"time"
 )
 
 const (
@@ -46,8 +45,8 @@ type persistedChunk struct {
 }
 
 type LogEntry struct {
-	Timestamp time.Time
-	Raw       []byte
+	TimestampMs int64
+	Raw         []byte
 }
 
 // diskLogChunk is an implementation of LogChunk backed by a directory on disk.
@@ -115,4 +114,4 @@ type ByTimestamp []*LogEntry
 
 func (t ByTimestamp) Len() int           { return len(t) }
 func (t ByTimestamp) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
-func (t ByTimestamp) Less(i, j int) bool { return t[i].Timestamp.Before(t[j].Timestamp) }
+func (t ByTimestamp) Less(i, j int) bool { return t[i].TimestampMs < t[j].TimestampMs }

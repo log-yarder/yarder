@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"path"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -15,9 +14,9 @@ func TestSize(t *testing.T) {
 	chunk, err := storage.CreateChunk()
 	require.NoError(t, err)
 
-	chunk.Append(&LogEntry{Timestamp: time.Unix(6, 0)})
-	chunk.Append(&LogEntry{Timestamp: time.Unix(4, 0)})
-	chunk.Append(&LogEntry{Timestamp: time.Unix(5, 0)})
+	chunk.Append(&LogEntry{TimestampMs: 6})
+	chunk.Append(&LogEntry{TimestampMs: 4})
+	chunk.Append(&LogEntry{TimestampMs: 5})
 
 	require.Equal(t, 3, chunk.Size())
 }
@@ -27,9 +26,9 @@ func TestSortsEntries(t *testing.T) {
 	chunk, err := storage.CreateChunk()
 	require.NoError(t, err)
 
-	chunk.Append(&LogEntry{Timestamp: time.Unix(6, 0)})
-	chunk.Append(&LogEntry{Timestamp: time.Unix(4, 0)})
-	chunk.Append(&LogEntry{Timestamp: time.Unix(5, 0)})
+	chunk.Append(&LogEntry{TimestampMs: 6})
+	chunk.Append(&LogEntry{TimestampMs: 4})
+	chunk.Append(&LogEntry{TimestampMs: 5})
 
 	err = chunk.Close()
 	require.NoError(t, err)
@@ -49,9 +48,9 @@ func TestSortsEntries(t *testing.T) {
 
 	// Check that the entries are in order.
 	require.Equal(t, 3, len(p.Entries))
-	require.Equal(t, time.Unix(4, 0), p.Entries[0].Timestamp)
-	require.Equal(t, time.Unix(5, 0), p.Entries[1].Timestamp)
-	require.Equal(t, time.Unix(6, 0), p.Entries[2].Timestamp)
+	require.Equal(t, int64(4), p.Entries[0].TimestampMs)
+	require.Equal(t, int64(5), p.Entries[1].TimestampMs)
+	require.Equal(t, int64(6), p.Entries[2].TimestampMs)
 }
 
 func createStorage(t *testing.T) *DiskStorage {
