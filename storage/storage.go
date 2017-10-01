@@ -73,7 +73,6 @@ func (c *diskLogChunk) Close() error {
 	}
 	c.closed = true
 
-	// Sort all the entries by timestamp.
 	sort.Sort(ByTimestamp(c.entries))
 
 	// Write the raw file for this chunk before anything else.
