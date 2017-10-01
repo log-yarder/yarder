@@ -20,7 +20,7 @@ const (
 func main() {
 	tmpDir, err := ioutil.TempDir("", "yarder-dev")
 	if err != nil {
-		log.Panicf(fmt.Sprintf("unable to create temp dir, %v", err))
+		log.Panicf("unable to create temp dir, %v", err)
 	}
 
 	diskStorage := &storage.DiskStorage{Path: tmpDir}
@@ -53,7 +53,7 @@ func main() {
 
 		err = ingester.HandleIngest(entryBlob)
 		if err != nil {
-			log.Panicf(fmt.Sprintf("failed to ingest entry [%s], %v", name, err))
+			log.Panicf("failed to ingest entry [%s], %v", name, err)
 		}
 	}
 }
