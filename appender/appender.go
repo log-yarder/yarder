@@ -14,7 +14,7 @@ type Appender struct {
 }
 
 // HandleAppend processes a request to append a single entry to the logs.
-func (a *Appender) HandleAppend(entry string) error {
+func (a *Appender) HandleAppend(entry *storage.LogEntry) error {
 	// Make sure we have a chunk to write to.
 	if a.openChunk == nil {
 		chunk, err := a.Storage.CreateChunk()
