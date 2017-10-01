@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"log"
 	"path"
+	"sort"
+	"time"
 )
 
 const (
@@ -15,8 +17,8 @@ const (
 
 // LogChunk represents a sequence of log entries.
 type LogChunk interface {
-	// Append add a single entry to an open chunk.
-	Append(entry string) error
+	// Append adds a single entry to an open chunk.
+	Append(entry *LogEntry) error
 
 	// Size returns the current number of entries in the chunk.
 	Size() int
@@ -38,8 +40,14 @@ type DiskStorage struct {
 }
 
 // persistedChunk is the format used to serialize a chunk to bytes.
+// TODO(dino): Replace this with an index from the index package.
 type persistedChunk struct {
-	Entries []string
+	Entries []*LogEntry
+}
+
+type LogEntry struct {
+	Timestamp time.Time
+	Raw       []byte
 }
 
 // diskLogChunk is an implementation of LogChunk backed by a directory on disk.
@@ -47,10 +55,10 @@ type diskLogChunk struct {
 	id        string
 	closed    bool
 	chunkFile string
-	entries   []string
+	entries   []*LogEntry
 }
 
-func (c *diskLogChunk) Append(entry string) error {
+func (c *diskLogChunk) Append(entry *LogEntry) error {
 	c.entries = append(c.entries, entry)
 	return nil
 }
@@ -64,6 +72,9 @@ func (c *diskLogChunk) Close() error {
 		return fmt.Errorf("Cannot close already closed %s", c.id)
 	}
 	c.closed = true
+
+	// Sort all the entries by timestamp.
+	sort.Sort(ByTimestamp(c.entries))
 
 	// Write the raw file for this chunk before anything else.
 	err := writeJson(c.chunkFile, &persistedChunk{Entries: c.entries})
@@ -97,6 +108,12 @@ func (s *DiskStorage) CreateChunk() (LogChunk, error) {
 		id:        chunkId,
 		closed:    false,
 		chunkFile: path.Join(s.Path, chunkId),
-		entries:   []string{},
+		entries:   []*LogEntry{},
 	}, nil
 }
+
+type ByTimestamp []*LogEntry
+
+func (t ByTimestamp) Len() int           { return len(t) }
+func (t ByTimestamp) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
+func (t ByTimestamp) Less(i, j int) bool { return t[i].Timestamp.Before(t[j].Timestamp) }

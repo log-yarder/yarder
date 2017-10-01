@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"time"
 
 	"github.com/log-yarder/yarder/appender"
 	"github.com/log-yarder/yarder/discovery"
@@ -18,7 +20,7 @@ const (
 func main() {
 	tmpDir, err := ioutil.TempDir("", "yarder-dev")
 	if err != nil {
-		log.Panicf(fmt.Sprintf("Unable to create temp dir, %v", err))
+		log.Panicf(fmt.Sprintf("unable to create temp dir, %v", err))
 	}
 
 	diskStorage := &storage.DiskStorage{Path: tmpDir}
@@ -41,9 +43,23 @@ func main() {
 
 	for i := 0; i < 40; i++ {
 		name := fmt.Sprintf("entry-%d", i)
-		err := ingester.HandleIngest(name)
+		entryBlob, err := json.Marshal(&entry{
+			Name:      name,
+			Timestamp: fmt.Sprintf("%d", time.Now().Unix()),
+		})
+		if err != nil {
+			log.Panicf("failed to marshal json: %v", err)
+		}
+
+		err = ingester.HandleIngest(entryBlob)
 		if err != nil {
 			log.Panicf(fmt.Sprintf("failed to ingest entry [%s], %v", name, err))
 		}
 	}
+}
+
+// entry is used only to serialize test log entries to json.
+type entry struct {
+	Name      string `json:"name"`
+	Timestamp string `json:"timestamp"`
 }
