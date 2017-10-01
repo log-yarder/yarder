@@ -3,7 +3,6 @@ package ingester
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/log-yarder/yarder/discovery"
@@ -20,7 +19,8 @@ type Ingester struct {
 	Discovery *discovery.Discovery
 }
 
-// HandleIngest ingests a single log entry.
+// HandleIngest ingests a single log entry. Then entry is treated as a json
+// blob. The only requirement is that the blob have a 'timestamp' field.
 func (i *Ingester) HandleIngest(rawEntry []byte) error {
 	entry, err := createEntry(rawEntry)
 	if err != nil {
@@ -41,26 +41,21 @@ func createEntry(rawEntry []byte) (*storage.LogEntry, error) {
 	var jsonMap map[string]interface{}
 	err := json.Unmarshal(rawEntry, &jsonMap)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to unmarshal json: %v", err)
+		return nil, fmt.Errorf("unable to unmarshal json: %v", err)
 	}
 
 	value, ok := jsonMap[timestampKey]
 	if !ok {
-		return nil, fmt.Errorf("Could not find key %s in map", timestampKey)
+		return nil, fmt.Errorf("could not find key %s in map", timestampKey)
 	}
 
-	timeString, ok := value.(string)
+	timestamp, ok := value.(float64)
 	if !ok {
-		return nil, fmt.Errorf("Unable to interpret timestamp as string")
-	}
-
-	timestamp, err := strconv.ParseInt(timeString, 10, 64)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to convert %s to a timestamp", timeString)
+		return nil, fmt.Errorf("unable to interpret timestamp as int64")
 	}
 
 	return &storage.LogEntry{
-		Timestamp: time.Unix(timestamp, 0),
+		Timestamp: time.Unix(int64(timestamp), 0),
 		Raw:       rawEntry,
 	}, nil
 }

@@ -45,7 +45,7 @@ func main() {
 		name := fmt.Sprintf("entry-%d", i)
 		entryBlob, err := json.Marshal(&entry{
 			Name:      name,
-			Timestamp: fmt.Sprintf("%d", time.Now().Unix()),
+			Timestamp: time.Now().Unix(),
 		})
 		if err != nil {
 			log.Panicf("failed to marshal json: %v", err)
@@ -61,5 +61,5 @@ func main() {
 // entry is used only to serialize test log entries to json.
 type entry struct {
 	Name      string `json:"name"`
-	Timestamp string `json:"timestamp"`
+	Timestamp int64  `json:"timestamp"`
 }
