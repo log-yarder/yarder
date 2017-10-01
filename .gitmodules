@@ -1,3 +1,24 @@
 [submodule "vendor/github.com/stretchr/testify"]
 	path = vendor/github.com/stretchr/testify
 	url = https://github.com/stretchr/testify
+[submodule "vendor/github.com/blevesearch/bleve"]
+	path = vendor/github.com/blevesearch/bleve
+	url = https://github.com/blevesearch/bleve
+[submodule "vendor/golang.org/x/net"]
+	path = vendor/golang.org/x/net
+	url = https://go.googlesource.com/net
+[submodule "vendor/github.com/boltdb/bolt"]
+	path = vendor/github.com/boltdb/bolt
+	url = https://github.com/boltdb/bolt
+[submodule "vendor/github.com/steveyen/gtreap"]
+	path = vendor/github.com/steveyen/gtreap
+	url = https://github.com/steveyen/gtreap
+[submodule "vendor/github.com/golang/protobuf"]
+	path = vendor/github.com/golang/protobuf
+	url = https://github.com/golang/protobuf
+[submodule "vendor/github.com/blevesearch/go-porterstemmer"]
+	path = vendor/github.com/blevesearch/go-porterstemmer
+	url = https://github.com/blevesearch/go-porterstemmer
+[submodule "vendor/github.com/blevesearch/segment"]
+	path = vendor/github.com/blevesearch/segment
+	url = https://github.com/blevesearch/segment
