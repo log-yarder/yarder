@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
 .DEFAULT: test
-.PHONY: test reset
+.PHONY: test clean
 
 test:
 	./dev/test.sh
