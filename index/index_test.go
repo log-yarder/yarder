@@ -34,13 +34,13 @@ func TestIndexWithOneDoc(t *testing.T) {
 }
 
 func TestUnmarshaledIndexWithOneDoc(t *testing.T) {
-	i := &MapIndex{}
+	var i Index = &MapIndex{}
 	i.Add(testDoc, strings.Split(testDoc, " "))
 	var buf bytes.Buffer
-	err := i.WriteTo(&buf)
+	err := i.MarshalTo(&buf)
 	require.NoError(t, err)
 	require.NotEmpty(t, buf.String())
-	i, err = ReadMapIndex(&buf)
+	i, err = UnmarshalFrom(&buf)
 	require.NoError(t, err)
 
 	require.Equal(t, []string{testDoc}, i.Match([]string{"foo"}))

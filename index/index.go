@@ -9,7 +9,7 @@ import (
 type Index interface {
 	Match(terms []string) []string
 	Add(doc string, terms []string)
-	WriteTo(w io.Writer) error
+	MarshalTo(w io.Writer) error
 }
 
 type MapIndex struct {
@@ -18,7 +18,7 @@ type MapIndex struct {
 	Terms map[string][]int
 }
 
-func ReadMapIndex(r io.Reader) (*MapIndex, error) {
+func UnmarshalFrom(r io.Reader) (Index, error) {
 	dec := json.NewDecoder(r)
 	ind := &MapIndex{}
 	if err := dec.Decode(ind); err != nil {
@@ -104,7 +104,7 @@ func (i *MapIndex) Add(doc string, terms []string) {
 	}
 }
 
-func (i *MapIndex) WriteTo(w io.Writer) error {
+func (i *MapIndex) MarshalTo(w io.Writer) error {
 	i.mu.RLock()
 	defer i.mu.RUnlock()
 
