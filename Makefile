@@ -6,5 +6,5 @@
 test:
 	./dev/test.sh
 
-reset:
-	./dev/reset.sh
+clean:
+	./dev/clean.sh
