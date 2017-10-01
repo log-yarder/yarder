@@ -3,6 +3,7 @@ package storage
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"path"
 	"testing"
 
@@ -11,6 +12,8 @@ import (
 
 func TestSize(t *testing.T) {
 	storage := createStorage(t)
+	defer os.RemoveAll(storage.Path)
+
 	chunk, err := storage.CreateChunk()
 	require.NoError(t, err)
 
@@ -23,6 +26,8 @@ func TestSize(t *testing.T) {
 
 func TestSortsEntries(t *testing.T) {
 	storage := createStorage(t)
+	defer os.RemoveAll(storage.Path)
+
 	chunk, err := storage.CreateChunk()
 	require.NoError(t, err)
 
