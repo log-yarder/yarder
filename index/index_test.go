@@ -9,22 +9,31 @@ import (
 )
 
 const testDoc = "foo bar"
+const testDoc2 = "bar baz"
 
-func TestEmptyIndex_MatchReturnsEmpty(t *testing.T) {
+func TestEmptyIndex(t *testing.T) {
 	var i MapIndex
+
+	require.Empty(t, i.Match(nil))
+	require.Empty(t, i.Match([]string{}))
 	require.Empty(t, i.Match([]string{"bar"}))
 	require.Empty(t, i.Match([]string{"baz"}))
+	require.Empty(t, i.Match([]string{"bar", "baz"}))
 }
 
-func TestIndex_CanMatchAddedDoc(t *testing.T) {
+func TestIndexWithOneDoc(t *testing.T) {
 	var i MapIndex
 	i.Add(testDoc, strings.Split(testDoc, " "))
+
 	require.Equal(t, []string{testDoc}, i.Match([]string{"foo"}))
 	require.Equal(t, []string{testDoc}, i.Match([]string{"bar"}))
+	require.Equal(t, []string{testDoc}, i.Match([]string{"foo", "bar"}))
+	require.Empty(t, i.Match(nil))
+	require.Empty(t, i.Match([]string{}))
 	require.Empty(t, i.Match([]string{"baz"}))
 }
 
-func TestUnmarshaledIndex_CanMatchAddedDoc(t *testing.T) {
+func TestUnmarshaledIndexWithOneDoc(t *testing.T) {
 	i := &MapIndex{}
 	i.Add(testDoc, strings.Split(testDoc, " "))
 	var buf bytes.Buffer
@@ -33,7 +42,24 @@ func TestUnmarshaledIndex_CanMatchAddedDoc(t *testing.T) {
 	require.NotEmpty(t, buf.String())
 	i, err = ReadMapIndex(&buf)
 	require.NoError(t, err)
+
 	require.Equal(t, []string{testDoc}, i.Match([]string{"foo"}))
 	require.Equal(t, []string{testDoc}, i.Match([]string{"bar"}))
+	require.Equal(t, []string{testDoc}, i.Match([]string{"foo", "bar"}))
+	require.Empty(t, i.Match(nil))
+	require.Empty(t, i.Match([]string{}))
 	require.Empty(t, i.Match([]string{"baz"}))
+}
+
+func TestIndexWithMultipleDocs(t *testing.T) {
+	var i MapIndex
+	i.Add(testDoc, strings.Split(testDoc, " "))
+	i.Add(testDoc2, strings.Split(testDoc2, " "))
+
+	require.Equal(t, []string{testDoc}, i.Match([]string{"foo"}))
+	require.Equal(t, []string{testDoc, testDoc2}, i.Match([]string{"bar"}))
+	require.Equal(t, []string{testDoc2}, i.Match([]string{"baz"}))
+	require.Empty(t, i.Match(nil))
+	require.Empty(t, i.Match([]string{}))
+	require.Empty(t, i.Match([]string{"quux"}))
 }

@@ -28,46 +28,66 @@ func ReadMapIndex(r io.Reader) (*MapIndex, error) {
 }
 
 func (i *MapIndex) Match(terms []string) []string {
-	i.mu.RLock()
-	defer i.mu.RUnlock()
-
-	var docsLists [][]int
-	for _, t := range terms {
-		docs := i.Terms[t]
-		if len(docs) > 0 {
-			docsLists = append(docsLists, docs)
-		}
-	}
-	if len(docsLists) == 0 {
+	if len(terms) == 0 {
 		return nil
 	}
 
-	positions := make([]int, len(docsLists))
+	i.mu.RLock()
+	defer i.mu.RUnlock()
+
+	// Gather the doc-lists for all terms in the query
+	var docLists [][]int
+	for _, t := range terms {
+		docs := i.Terms[t]
+		if len(docs) == 0 {
+			// If a doc-list is empty (or not present in the map), the query can never match
+			return nil
+		}
+		docLists = append(docLists, docs)
+	}
+
+	// The doc-lists contain ordered indexes into the docs array. To find docs that match all terms,
+	// we find doc-indexes that are present in all of the doc-lists.
+	// In the loop, we maintain an iterator into each doc-list. If the doc-indexes referenced by the
+	// iterators all match, we have a result. If there is a mismatch, we advance the iterators with
+	// the lowest doc-index.
+	positions := make([]int, len(docLists))
 	var results []string
+Loop:
 	for {
-		min := len(i.Docs)
-		max := -1
-		for i, pos := range positions {
-			docs := docsLists[i]
-			if pos >= len(docs) {
-				return results
+		// minDoc tracks the minimum doc-index under the current iterators.
+		minDoc := docLists[0][positions[0]]
+		// sameDocs tracks whether all the iterators have the same value.
+		sameDocs := true
+		for i, pos := range positions[1:] {
+			docs := docLists[i]
+			if docs[pos] != minDoc {
+				sameDocs = false
 			}
-			if docs[pos] < min {
-				min = docs[pos]
-			}
-			if docs[pos] > max {
-				max = docs[pos]
+			if docs[pos] < minDoc {
+				minDoc = docs[pos]
 			}
 		}
-		if min == max {
-			results = append(results, i.Docs[min])
+		// If all the iterators have the same value, that value is a match.
+		if sameDocs {
+			results = append(results, i.Docs[minDoc])
 		}
+
+		// Advance all iterators that were referencing the minimum doc-index.
 		for i := range positions {
-			if docsLists[i][positions[i]] == min {
-				positions[i] += 1
+			docs, ppos := docLists[i], &positions[i]
+			if docs[*ppos] != minDoc {
+				continue
+			}
+			*ppos += 1
+			// If one of the iterators has no docs left, our result set is complete.
+			if *ppos >= len(docs) {
+				break Loop
 			}
 		}
 	}
+
+	return results
 }
 
 func (i *MapIndex) Add(doc string, terms []string) {
