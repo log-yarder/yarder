@@ -1,6 +1,10 @@
 #!/usr/bin/make -f
 
-.PHONY: test
 .DEFAULT: test
+.PHONY: test reset
+
 test:
-	./ci/test.sh
+	./dev/test.sh
+
+reset:
+	./dev/reset.sh
